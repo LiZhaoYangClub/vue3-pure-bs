@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import { resolve } from "path";
 import pkg from "./package.json";
 import { warpperEnv } from "./build";
+import { createProxy } from "./build/proxy";
 import { getPluginsList } from "./build/plugins";
 import { include, exclude } from "./build/optimize";
 import { UserConfigExport, ConfigEnv, loadEnv } from "vite";
@@ -35,6 +36,14 @@ export default ({ command, mode }: ConfigEnv): UserConfigExport => {
     resolve: {
       alias
     },
+    css: {
+      // 全局配置 utils.scs，详细配置参考 vue-cli 官网
+      preprocessorOptions: {
+        scss: {
+          additionalData: `@use "@/style/utils.scss" as *;`
+        }
+      }
+    },
     // 服务端渲染
     server: {
       // 是否开启 https
@@ -43,7 +52,7 @@ export default ({ command, mode }: ConfigEnv): UserConfigExport => {
       port: VITE_PORT,
       host: "0.0.0.0",
       // 本地跨域代理 https://cn.vitejs.dev/config/server-options.html#server-proxy
-      proxy: {}
+      proxy: createProxy()
     },
     plugins: getPluginsList(command, VITE_CDN, VITE_COMPRESSION),
     // https://cn.vitejs.dev/config/dep-optimization-options.html#dep-optimization-options

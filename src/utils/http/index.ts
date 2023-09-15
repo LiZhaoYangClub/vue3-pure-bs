@@ -10,12 +10,12 @@ import {
   PureHttpRequestConfig
 } from "./types.d";
 import { stringify } from "qs";
-import NProgress from "../progress";
 import { getToken, formatToken } from "@/utils/auth";
-import { useUserStoreHook } from "@/store/modules/user";
+import { handleSystemStatus, handlerAbnormalCode } from "./status";
 
 // 相关配置请参考：www.axios-js.com/zh-cn/docs/#axios-request-config-1
 const defaultConfig: AxiosRequestConfig = {
+  baseURL: import.meta.env.MODE === "production" ? window.API : "",
   // 请求超时时间
   timeout: 10000,
   headers: {
@@ -29,7 +29,10 @@ const defaultConfig: AxiosRequestConfig = {
   }
 };
 
+const whiteList = ["/refreshToken", "/api-sys/oauth2/web/token"];
+
 class PureHttp {
+  [x: string]: any;
   constructor() {
     this.httpInterceptorsRequest();
     this.httpInterceptorsResponse();
@@ -61,8 +64,6 @@ class PureHttp {
   private httpInterceptorsRequest(): void {
     PureHttp.axiosInstance.interceptors.request.use(
       async (config: PureHttpRequestConfig): Promise<any> => {
-        // 开启进度条动画
-        NProgress.start();
         // 优先判断post/get等方法是否传入回调，否则执行初始化设置等回调
         if (typeof config.beforeRequestCallback === "function") {
           config.beforeRequestCallback(config);
@@ -73,40 +74,12 @@ class PureHttp {
           return config;
         }
         /** 请求白名单，放置一些不需要token的接口（通过设置请求白名单，防止token过期后再请求造成的死循环问题） */
-        const whiteList = ["/refreshToken", "/login"];
-        return whiteList.some(v => config.url.indexOf(v) > -1)
+        return whiteList.find(url => url === config.url)
           ? config
           : new Promise(resolve => {
-              const data = getToken();
-              if (data) {
-                const now = new Date().getTime();
-                const expired = parseInt(data.expires) - now <= 0;
-                if (expired) {
-                  if (!PureHttp.isRefreshing) {
-                    PureHttp.isRefreshing = true;
-                    // token过期刷新
-                    useUserStoreHook()
-                      .handRefreshToken({ refreshToken: data.refreshToken })
-                      .then(res => {
-                        const token = res.data.accessToken;
-                        config.headers["Authorization"] = formatToken(token);
-                        PureHttp.requests.forEach(cb => cb(token));
-                        PureHttp.requests = [];
-                      })
-                      .finally(() => {
-                        PureHttp.isRefreshing = false;
-                      });
-                  }
-                  resolve(PureHttp.retryOriginalRequest(config));
-                } else {
-                  config.headers["Authorization"] = formatToken(
-                    data.accessToken
-                  );
-                  resolve(config);
-                }
-              } else {
-                resolve(config);
-              }
+              const token = getToken();
+              config.headers["Authorization"] = formatToken(token);
+              resolve(config);
             });
       },
       error => {
@@ -121,8 +94,6 @@ class PureHttp {
     instance.interceptors.response.use(
       (response: PureHttpResponse) => {
         const $config = response.config;
-        // 关闭进度条动画
-        NProgress.done();
         // 优先判断post/get等方法是否传入回调，否则执行初始化设置等回调
         if (typeof $config.beforeResponseCallback === "function") {
           $config.beforeResponseCallback(response);
@@ -132,13 +103,38 @@ class PureHttp {
           PureHttp.initConfig.beforeResponseCallback(response);
           return response.data;
         }
-        return response.data;
+        const { code, msg, data: result } = response.data;
+
+        const isWhite = whiteList.find(url => url === response.config.url);
+        // 白名单直接处理且须有返回
+        if (isWhite) {
+          handlerAbnormalCode(code, msg);
+          return {
+            ...result,
+            status: code === "000000" ? 1 : 0
+          };
+        }
+        if (code !== "000000") {
+          handlerAbnormalCode(code, msg);
+          return Promise.reject("异常!");
+        }
+        // 返回结果
+        return result;
       },
       (error: PureHttpError) => {
         const $error = error;
         $error.isCancelRequest = Axios.isCancel($error);
-        // 关闭进度条动画
-        NProgress.done();
+        const { code, message } = error;
+        const err: string = error?.toString?.() ?? "";
+        // 网络超时
+        if (code === "ECONNABORTED" && message.indexOf("timeout") !== -1) {
+          handleSystemStatus("ECONNABORTED");
+        } else if (err?.includes("Network Error")) {
+          // 网络错误
+          handleSystemStatus("Network Error");
+        } else {
+          handleSystemStatus(error?.response?.status);
+        }
         // 所有的响应异常 区分来源为取消请求/非取消请求
         return Promise.reject($error);
       }
@@ -188,6 +184,33 @@ class PureHttp {
     config?: PureHttpRequestConfig
   ): Promise<P> {
     return this.request<P>("get", url, params, config);
+  }
+
+  /** 单独抽离的delete工具函数 */
+  public delete<T, P>(
+    url: string,
+    params?: AxiosRequestConfig<T>,
+    config?: PureHttpRequestConfig
+  ): Promise<P> {
+    return this.request<P>("delete", url, params, config);
+  }
+
+  /** 单独抽离的put工具函数 */
+  public put<T, P>(
+    url: string,
+    params?: AxiosRequestConfig<T>,
+    config?: PureHttpRequestConfig
+  ): Promise<P> {
+    return this.request<P>("put", url, params, config);
+  }
+
+  /** 单独抽离的patch工具函数 */
+  public patch<T, P>(
+    url: string,
+    params?: AxiosRequestConfig<T>,
+    config?: PureHttpRequestConfig
+  ): Promise<P> {
+    return this.request<P>("patch", url, params, config);
   }
 }
 

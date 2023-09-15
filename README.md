@@ -1,40 +1,46 @@
-<h1>vue-pure-admin精简版（非国际化版本）</h1>
+# vue3-pure-bs
 
-[![license](https://img.shields.io/github/license/pure-admin/vue-pure-admin.svg)](LICENSE)
+- 大屏采用 scale 进行自适应
+- 以 1920 \* 1080 作为标准尺寸开发
+- 以屏幕高度作为基础进行缩放，同时窗体尺寸做等比缩放
+- 最终效果是以设计稿开发的高度占满，宽度等比缩放的自适应大屏
 
-**中文** | [English](./README.en-US.md)
+## 场景
 
-## 介绍
+### 场景一
 
-精简版是基于 [vue-pure-admin](https://github.com/pure-admin/vue-pure-admin) 提炼出的架子，包含主体功能，更适合实际项目开发，打包后的大小在全局引入 [element-plus](https://element-plus.org) 的情况下仍然低于 `2.3MB`，并且会永久同步完整版的代码。开启 `brotli` 压缩和 `cdn` 替换本地库模式后，打包大小低于 `350kb`
+> 总分辨率为固定为 9600\*2160，分为左--中--右三块屏幕拼接而成， 不会适配过大过小的屏幕
 
-## 版本选择
+- 左屏分辨率：2880\*2160
+- 中屏分辨率：3840\*2160
+- 右屏分辨率：2880\*2160
 
-当前是非国际化版本，如果您需要国际化版本 [请点击](https://github.com/pure-admin/pure-admin-thin/tree/i18n)
+### 场景二
 
-## 配套视频
+> 基础分辨率为 1920\*1080，要求向上向下能适配 16:9 的屏幕
 
-- [点我查看教程](https://www.bilibili.com/video/BV1kg411v7QT)
-- [点我查看 UI 设计](https://www.bilibili.com/video/BV17g411T7rq)
+- 1920\*1080
+- 1280\*720
+- 2560\*1440
+- 3840\*2160
+- 7480\*3240
 
-## 配套保姆级文档
+### 场景三
 
-- [查看文档](https://yiming_chang.gitee.io/pure-admin-doc)
+> 多个 2880\*2160 拼接
 
-## 预览
+- 2880\*2160
 
-- [查看预览](https://pure-admin-thin.netlify.app/#/login)
+### 场景四
 
-## 维护者
+- 6000\*2160
 
-[xiaoxian521](https://github.com/xiaoxian521)
+## 适配方案
 
-## ⚠️ 注意
+- [地址](https://juejin.cn/post/7163932925955112996?searchId=20230914151319857D42005265AE1DB72D#heading-2)
 
-- 精简版不接受任何 `issues` 和 `pr`，如果有问题请到完整版 [issues](https://github.com/pure-admin/vue-pure-admin/issues/new/choose) 去提，谢谢！
+### vw vh
 
-## 许可证
+### scale
 
-原则上不收取任何费用及版权，可商用，不过如需二次开源（比如用此平台二次开发并开源，要求前端代码必须开源免费）请联系作者获取许可！（免费，走个记录而已）
-
-[MIT © 2020-present, pure-admin](./LICENSE)
+### rem + vw vh

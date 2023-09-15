@@ -1,4 +1,3 @@
-import { cdn } from "./cdn";
 import vue from "@vitejs/plugin-vue";
 import { viteBuildInfo } from "./info";
 import svgLoader from "vite-svg-loader";
@@ -9,7 +8,7 @@ import { configCompressPlugin } from "./compress";
 import { visualizer } from "rollup-plugin-visualizer";
 import removeConsole from "vite-plugin-remove-console";
 import themePreprocessorPlugin from "@pureadmin/theme";
-import { genScssMultipleScopeVars } from "../src/layout/theme";
+import { genScssMultipleScopeVars } from "./theme";
 
 export function getPluginsList(
   command: string,
@@ -22,7 +21,6 @@ export function getPluginsList(
     vue(),
     // jsx、tsx语法支持
     vueJsx(),
-    VITE_CDN ? cdn : null,
     configCompressPlugin(VITE_COMPRESSION),
     // 线上环境删除console
     removeConsole({ external: ["src/assets/iconfont/iconfont.js"] }),

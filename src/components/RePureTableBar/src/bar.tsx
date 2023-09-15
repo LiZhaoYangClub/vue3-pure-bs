@@ -1,4 +1,3 @@
-import { useEpThemeStoreHook } from "@/store/modules/epTheme";
 import { defineComponent, ref, computed, type PropType, nextTick } from "vue";
 import {
   delay,
@@ -55,8 +54,6 @@ export default defineComponent({
     const getDropdownItemStyle = computed(() => {
       return s => {
         return {
-          background:
-            s === size.value ? useEpThemeStoreHook().epThemeColor : "",
           color: s === size.value ? "#fff" : "var(--el-text-color-primary)"
         };
       };

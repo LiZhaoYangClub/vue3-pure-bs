@@ -31,6 +31,7 @@ declare global {
   interface Window {
     // Global vue app instance
     __APP__: App<Element>;
+    API: string;
     webkitCancelAnimationFrame: (handle: number) => void;
     mozCancelAnimationFrame: (handle: number) => void;
     oCancelAnimationFrame: (handle: number) => void;
@@ -70,91 +71,4 @@ declare global {
    *  继承 `@pureadmin/table` 的 `TableColumns` ，方便全局直接调用
    */
   interface TableColumnList extends Array<TableColumns> {}
-
-  /**
-   * 对应 `public/serverConfig.json` 文件的类型声明
-   * @see {@link https://yiming_chang.gitee.io/pure-admin-doc/pages/config/#serverconfig-json}
-   */
-  interface ServerConfigs {
-    Version?: string;
-    Title?: string;
-    FixedHeader?: boolean;
-    HiddenSideBar?: boolean;
-    MultiTagsCache?: boolean;
-    KeepAlive?: boolean;
-    Locale?: string;
-    Layout?: string;
-    Theme?: string;
-    DarkMode?: boolean;
-    Grey?: boolean;
-    Weak?: boolean;
-    HideTabs?: boolean;
-    SidebarStatus?: boolean;
-    EpThemeColor?: string;
-    ShowLogo?: boolean;
-    ShowModel?: string;
-    MenuArrowIconNoTransition?: boolean;
-    CachingAsyncRoutes?: boolean;
-    TooltipEffect?: Effect;
-    ResponsiveStorageNameSpace?: string;
-  }
-
-  /**
-   * 与 `ServerConfigs` 类型不同，这里是缓存到浏览器本地存储的类型声明
-   * @see {@link https://yiming_chang.gitee.io/pure-admin-doc/pages/config/#serverconfig-json}
-   */
-  interface StorageConfigs {
-    version?: string;
-    title?: string;
-    fixedHeader?: boolean;
-    hiddenSideBar?: boolean;
-    multiTagsCache?: boolean;
-    keepAlive?: boolean;
-    locale?: string;
-    layout?: string;
-    theme?: string;
-    darkMode?: boolean;
-    grey?: boolean;
-    weak?: boolean;
-    hideTabs?: boolean;
-    sidebarStatus?: boolean;
-    epThemeColor?: string;
-    showLogo?: boolean;
-    showModel?: string;
-    username?: string;
-  }
-
-  /**
-   * `responsive-storage` 本地响应式 `storage` 的类型声明
-   */
-  interface ResponsiveStorage {
-    locale: {
-      locale?: string;
-    };
-    layout: {
-      layout?: string;
-      theme?: string;
-      darkMode?: boolean;
-      sidebarStatus?: boolean;
-      epThemeColor?: string;
-    };
-    configure: {
-      grey?: boolean;
-      weak?: boolean;
-      hideTabs?: boolean;
-      showLogo?: boolean;
-      showModel?: string;
-      multiTagsCache?: boolean;
-    };
-    tags?: Array<any>;
-  }
-
-  /**
-   * 平台里所有组件实例都能访问到的全局属性对象的类型声明
-   */
-  interface GlobalPropertiesApi {
-    $echarts: ECharts;
-    $storage: ResponsiveStorage;
-    $config: ServerConfigs;
-  }
 }
